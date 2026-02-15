@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(cuid())
+  phoneNumber  String        @unique // Primary M-PESA number
+  name         String?
+  totalPoints  Decimal       @default(0) @db.Decimal(10, 2) // Total Bonga Points accumulated
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Transaction {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Incoming Bonga Payment Details (C2B)
+  mpesaReceiptNumber String  @unique // From Safaricom C2B notification
+  phoneNumber        String // User's phone (from BillRefNumber)
+  pointsPaid         Decimal @db.Decimal(10, 2)
+  equivalentCash     Decimal @db.Decimal(10, 2) // Original value (e.g., 0.3 per point)
+
+  // Outgoing Payout Details (B2C)
+  payoutAmount      Decimal      @db.Decimal(10, 2) // Amount sent to user after your fees
+  serviceFee        Decimal      @db.Decimal(10, 2) // Your profit margin
+  payoutStatus      PayoutStatus @default(PENDING)
+  b2cConversationId String?      @unique // From Safaricom B2C request
+  b2cOriginatorId   String?      @unique
+
+  rawCallbackData Json? // Store original Safaricom JSON for auditing
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+enum PayoutStatus {
+  PENDING // Received points, payout not yet initiated
+  PROCESSING // B2C request sent to Safaricom
+  COMPLETED // Cash successfully sent to user
+  FAILED // Payout failed (e.g., insufficient float or system error)
+  REVERSED // Transaction reversed
+}
