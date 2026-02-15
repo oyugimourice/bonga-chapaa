@@ -41,16 +41,27 @@ export async function POST(request: Request) {
         const commission = rawAmount - userPayout;
 
         // 2. Database: Record the transaction
+        const phoneNumber = body.BillRefNumber || body.MSISDN;
         const transaction = await prisma.transaction.create({
             data: {
                 mpesaReceiptNumber: body.TransID,
-                phoneNumber: body.BillRefNumber || body.MSISDN, // Prefer BillRefNumber if using that for account
-                pointsPaid: pointsConverted, // Storing as Decimal
+                phoneNumber: phoneNumber, // Specific phone for this tx
+                pointsPaid: pointsConverted,
                 equivalentCash: rawAmount,
                 payoutAmount: userPayout,
                 serviceFee: commission,
                 payoutStatus: 'PENDING',
                 rawCallbackData: body,
+                // Link to user (find or create)
+                user: {
+                    connectOrCreate: {
+                        where: { phoneNumber: phoneNumber },
+                        create: {
+                            phoneNumber: phoneNumber,
+                            name: `Customer ${phoneNumber.slice(-4)}`
+                        }
+                    }
+                }
             },
         });
 

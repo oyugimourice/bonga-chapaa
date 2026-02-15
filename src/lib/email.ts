@@ -36,7 +36,7 @@ export async function sendEmail({ to, subject, htmlContent, textContent }: Email
 
         const response = await apiInstance.sendTransacEmail(sendSmtpEmail);
         console.log('✅ Email sent successfully:', response);
-        return { success: true, messageId: response.messageId };
+        return { success: true, messageId: (response as any).body?.messageId };
     } catch (error) {
         console.error('❌ Error sending email:', error);
         return { success: false, error };

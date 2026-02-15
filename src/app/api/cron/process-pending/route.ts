@@ -29,7 +29,7 @@ export async function GET(request: Request) {
 
         // 2. Process each transaction
         const results = await Promise.allSettled(
-            pendingTransactions.map(async (tx: any) => {
+            pendingTransactions.map(async (tx) => {
                 console.log(`Retrying payout for ${tx.mpesaReceiptNumber}`);
                 // This will update status to PROCESSING or FAILED
                 await initiateB2CPayout(tx.id);
