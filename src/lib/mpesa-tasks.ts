@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { prisma } from './prisma';
 import { getDarajaToken } from './daraja';
+import { sendFailedTransactionAlert } from './email';
 
 export async function initiateB2CPayout(transactionId: string) {
   const trx = await prisma.transaction.findUnique({ where: { id: transactionId } });
@@ -8,9 +9,12 @@ export async function initiateB2CPayout(transactionId: string) {
 
   try {
     const token = await getDarajaToken();
-    const b2cUrl = process.env.MPESA_ENVIRONMENT === 'production' 
+    const baseUrl = process.env.MPESA_ENVIRONMENT === 'production'
       ? 'https://api.safaricom.co.ke'
       : 'https://sandbox.safaricom.co.ke';
+
+    // Correct endpoint for B2C
+    const b2cUrl = `${baseUrl}/mpesa/b2c/v1/paymentrequest`;
 
     const response = await axios.post(b2cUrl, {
       InitiatorName: process.env.B2C_INITIATOR_NAME,
@@ -30,17 +34,30 @@ export async function initiateB2CPayout(transactionId: string) {
     // Update status to processing
     await prisma.transaction.update({
       where: { id: transactionId },
-      data: { 
+      data: {
         payoutStatus: 'PROCESSING',
-        b2cConversationId: response.data.ConversationID 
+        b2cConversationId: response.data.ConversationID
       }
     });
 
   } catch (error: any) {
     console.error("B2C Error:", error.response?.data || error.message);
-    await prisma.transaction.update({
+    const updatedTx = await prisma.transaction.update({
       where: { id: transactionId },
       data: { payoutStatus: 'FAILED' }
     });
+
+    try {
+      await sendFailedTransactionAlert({
+        id: updatedTx.id,
+        phoneNumber: updatedTx.phoneNumber,
+        pointsPaid: Number(updatedTx.pointsPaid),
+        payoutAmount: Number(updatedTx.payoutAmount),
+        mpesaReceiptNumber: updatedTx.mpesaReceiptNumber,
+        createdAt: updatedTx.createdAt
+      });
+    } catch (emailError) {
+      console.error("Failed to send error email:", emailError);
+    }
   }
 }
