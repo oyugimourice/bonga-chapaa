@@ -30,7 +30,7 @@ Instant Bonga Points ➜ M-PESA cash bridge built with **Next.js 15**, **Prisma*
 
 ## 🚀 Quickstart
 
-1) Clone and install
+### 1. Clone and Install
 
 ```bash
 git clone https://github.com/your-org/bonga-chapaa
@@ -38,20 +38,41 @@ cd bonga-chapaa
 npm install
 ```
 
-1) Configure Neon and push schema
+### 2. Configure Database
 
-- Create a Neon project and grab pooled + direct connection strings.
-- Add `.env` (template below), then run:
+- Create a [Neon](https://neon.tech) project
+- Copy connection string to `.env`:
 
 ```bash
-npx prisma db push
+cp .env.example .env
+# Edit .env and add your DATABASE_URL
 ```
 
-1) Run the app
+### 3. Setup Database & Admin
+
+```bash
+# Run migrations, create admin user, and seed sample data
+npm run setup
+
+# Verify everything is working
+npm run admin:verify
+```
+
+### 4. Start Development Server
 
 ```bash
 npm run dev
 ```
+
+### 5. Access Admin Dashboard
+
+- Navigate to: `http://localhost:3000/admin`
+- Login with credentials from `.env`:
+  - Username: `admin` (or your `ADMIN_USER`)
+  - Password: `SecureAdmin@2026!` (or your `ADMIN_PASSWORD`)
+
+📖 **Detailed admin setup**: See [ADMIN_SETUP.md](./ADMIN_SETUP.md)
+
 
 ## 🔑 Environment
 
@@ -60,7 +81,6 @@ Create `.env` in project root:
 ```env
 # Database
 DATABASE_URL="postgresql://user:pass@ep-pooler.region.aws.neon.tech/dbname?sslmode=require"
-DIRECT_URL="postgresql://user:pass@ep-direct.region.aws.neon.tech/dbname?sslmode=require"
 
 # Daraja API
 MPESA_ENVIRONMENT="sandbox" # or "production"
@@ -71,9 +91,19 @@ MPESA_CONSUMER_SECRET="your_secret"
 B2C_SHORTCODE="your_paybill"
 B2C_INITIATOR_NAME="your_api_username"
 B2C_SECURITY_CREDENTIAL="your_encrypted_password"
+B2C_TIMEOUT_URL="https://yourdomain.com/api/mpesa/b2c/timeout"
+B2C_RESULT_URL="https://yourdomain.com/api/mpesa/b2c/result"
 
 # Business Logic
-USER_PAYOUT_RATE="0.20" # Cash per point (Safaricom pays 0.30)
+USER_PAYOUT_RATE="0.20" # Cash per point (Your payout to user)
+SAFARICOM_PAYOUT_RATE="0.30" # Cash per point (Safaricom pays you)
+
+# Admin Access
+ADMIN_USER="admin"
+ADMIN_PASSWORD="SecureAdmin@2026!" # Change in production!
+
+# Frontend
+NEXT_PUBLIC_PAYBILL="123456"
 ```
 
 ## 🗂️ Project Structure
