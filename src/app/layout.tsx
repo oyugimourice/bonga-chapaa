@@ -15,6 +15,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'BongaChapaa | Instant Bonga Points to M-PESA Cash',
   description: 'Convert your Safaricom Bonga Points to M-PESA cash instantly. Secure, fast, and reliable point-to-cash exchange in Kenya.',
+  icons: {
+    icon: '/icon.svg',
+    apple: '/apple-icon.svg',
+  },
 };
 
 export default function RootLayout({
