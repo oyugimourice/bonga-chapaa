@@ -3,9 +3,11 @@ import Header from '@/components/Header';
 import Calculator from '@/components/Calculator';
 import TransactionStatus from '@/components/TransactionStatus';
 import { ArrowDown, CheckCircle2, Zap, ShieldCheck, Banknote } from 'lucide-react';
+import { prisma } from '@/lib/prisma';
 
-export default function Home() {
-    const rate = parseFloat(process.env.USER_PAYOUT_RATE || '0.20');
+export default async function Home() {
+    const settings = await prisma.settings.findFirst();
+    const rate = parseFloat(settings?.userRate?.toString() || process.env.USER_PAYOUT_RATE || '0.20');
 
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-green-100 selection:text-green-900">

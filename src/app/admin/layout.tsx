@@ -15,10 +15,8 @@ export default function AdminLayout({
     const router = useRouter();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-    // Don't show the admin layout (sidebar) on the login page
-    if (pathname === '/admin/login') {
-        return <>{children}</>;
-    }
+    // After move, the layout only applies to /admin routes. 
+    // Auth routes are in /auth/signin and use RootLayout.
 
     const handleLogout = async () => {
         setIsLoggingOut(true);
@@ -28,7 +26,8 @@ export default function AdminLayout({
             });
 
             if (response.ok) {
-                router.push('/admin/login');
+                // Redirect to the new signin page
+                router.push('/auth/signin');
             }
         } catch (error) {
             console.error('Logout failed:', error);
@@ -38,7 +37,7 @@ export default function AdminLayout({
     };
 
     const navItems = [
-        { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+        { href: '/admin/overview', label: 'Overview', icon: LayoutDashboard },
         { href: '/admin/customers', label: 'Customers', icon: Users },
         { href: '/admin/settings', label: 'Settings', icon: Settings },
     ];
@@ -76,7 +75,7 @@ export default function AdminLayout({
                         className="flex items-center gap-3 px-4 py-3 w-full text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-colors disabled:opacity-50"
                     >
                         <LogOut className="w-5 h-5" />
-                        {isLoggingOut ? 'Logging out...' : 'Logout'}
+                        {isLoggingOut ? 'Establishing Exit...' : 'Logout Session'}
                     </button>
                 </div>
             </aside>

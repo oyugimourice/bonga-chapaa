@@ -1,10 +1,12 @@
 
 'use client';
 
-import { DollarSign, Shield, ExternalLink, Bell, Save, Mail, AlertTriangle } from 'lucide-react';
+import { DollarSign, Shield, ExternalLink, Bell, Save, Mail, AlertTriangle, TrendingUp } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface Settings {
+    userRate: number;
+    safaricomRate: number;
     emailNotifications: boolean;
     lowFloatWarning: boolean;
     lowFloatThreshold: number;
@@ -13,6 +15,8 @@ interface Settings {
 
 export default function SettingsPage() {
     const [settings, setSettings] = useState<Settings>({
+        userRate: 0.20,
+        safaricomRate: 0.30,
         emailNotifications: true,
         lowFloatWarning: true,
         lowFloatThreshold: 10000,
@@ -34,6 +38,8 @@ export default function SettingsPage() {
             if (response.ok) {
                 const data = await response.json();
                 setSettings({
+                    userRate: Number(data.userRate),
+                    safaricomRate: Number(data.safaricomRate),
                     emailNotifications: data.emailNotifications,
                     lowFloatWarning: data.lowFloatWarning,
                     lowFloatThreshold: Number(data.lowFloatThreshold),
@@ -101,247 +107,226 @@ export default function SettingsPage() {
             <div className="space-y-8">
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
-                    <p className="text-zinc-500">Loading...</p>
+                    <p className="text-zinc-500">Loading your configuration...</p>
                 </div>
             </div>
         );
     }
 
+    const currentMargin = (settings.safaricomRate - settings.userRate).toFixed(2);
+
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 pb-10">
             <div>
                 <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
-                <p className="text-zinc-500">Configure your BongaChapaa business settings.</p>
+                <p className="text-zinc-500">Global system configuration and business rules.</p>
             </div>
 
             {/* Business Configuration */}
-            <div className="bg-white dark:bg-black rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <div className="p-6 border-b border-zinc-200 dark:border-zinc-800">
-                    <div className="flex items-center gap-3">
-                        <DollarSign className="w-5 h-5 text-green-600" />
-                        <h3 className="font-bold text-lg">Business Rates</h3>
-                    </div>
-                </div>
-                <div className="p-6 space-y-6">
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div className="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-lg">
-                            <div className="text-sm text-zinc-500 mb-1">User Payout Rate</div>
-                            <div className="text-2xl font-bold text-green-600">
-                                KES {process.env.NEXT_PUBLIC_USER_PAYOUT_RATE || "0.20"}
+            <div className="grid lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-8">
+                    <div className="bg-white dark:bg-black rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
+                        <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <DollarSign className="w-5 h-5 text-green-600" />
+                                <h3 className="font-bold text-lg">Business Rates</h3>
                             </div>
-                            <div className="text-xs text-zinc-500 mt-1">per Bonga Point</div>
+                            <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-full font-medium italic">Live Updates</span>
                         </div>
-                        <div className="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-lg">
-                            <div className="text-sm text-zinc-500 mb-1">Safaricom Rate</div>
-                            <div className="text-2xl font-bold text-blue-600">
-                                KES {process.env.NEXT_PUBLIC_SAFARICOM_PAYOUT_RATE || "0.30"}
+                        <div className="p-8 space-y-8">
+                            <div className="grid md:grid-cols-2 gap-8">
+                                <div className="space-y-3">
+                                    <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">User Payout Rate (KES per Point)</label>
+                                    <div className="relative group">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-green-600 transition-colors">
+                                            <TrendingUp className="w-5 h-5" />
+                                        </div>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={settings.userRate}
+                                            onChange={(e) => setSettings({ ...settings, userRate: parseFloat(e.target.value) })}
+                                            className="w-full pl-12 pr-4 py-3 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl focus:ring-2 focus:ring-green-600 outline-none transition-all font-bold text-lg"
+                                        />
+                                    </div>
+                                    <p className="text-xs text-zinc-500 italic">This is the amount the customer sees on the calculator.</p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Safaricom Rate (KES per Point)</label>
+                                    <div className="relative group">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-blue-600 transition-colors">
+                                            <Shield className="w-5 h-5" />
+                                        </div>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={settings.safaricomRate}
+                                            onChange={(e) => setSettings({ ...settings, safaricomRate: parseFloat(e.target.value) })}
+                                            className="w-full pl-12 pr-4 py-3 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl focus:ring-2 focus:ring-blue-600 outline-none transition-all font-bold text-lg"
+                                        />
+                                    </div>
+                                    <p className="text-xs text-zinc-500 italic">This is what Safaricom pays into your business account.</p>
+                                </div>
                             </div>
-                            <div className="text-xs text-zinc-500 mt-1">per Bonga Point</div>
-                        </div>
-                    </div>
 
-                    <div className="p-4 bg-green-50 dark:bg-green-900/10 rounded-lg border border-green-200 dark:border-green-800">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <div className="font-semibold text-green-900 dark:text-green-100">Profit Margin</div>
-                                <div className="text-sm text-green-700 dark:text-green-300">Your profit per point converted</div>
-                            </div>
-                            <div className="text-3xl font-bold text-green-600">
-                                KES {((parseFloat(process.env.NEXT_PUBLIC_SAFARICOM_PAYOUT_RATE || "0.30") - parseFloat(process.env.NEXT_PUBLIC_USER_PAYOUT_RATE || "0.20"))).toFixed(2)}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="p-4 bg-yellow-50 dark:bg-yellow-900/10 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                        <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                            ℹ️ To change these rates, update the <code className="px-1.5 py-0.5 bg-yellow-100 dark:bg-yellow-900 rounded font-mono text-xs">.env</code> file and restart the server.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Notifications */}
-            <div className="bg-white dark:bg-black rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <div className="p-6 border-b border-zinc-200 dark:border-zinc-800">
-                    <div className="flex items-center gap-3">
-                        <Bell className="w-5 h-5 text-green-600" />
-                        <h3 className="font-bold text-lg">Notifications</h3>
-                    </div>
-                </div>
-                <div className="p-6 space-y-6">
-                    {/* Email Address */}
-                    <div>
-                        <label className="block text-sm font-medium mb-2 flex items-center gap-2">
-                            <Mail className="w-4 h-4" />
-                            Notification Email
-                        </label>
-                        <input
-                            type="email"
-                            value={settings.notificationEmail}
-                            onChange={(e) => setSettings({ ...settings, notificationEmail: e.target.value })}
-                            placeholder="admin@example.com"
-                            className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        />
-                        <div className="flex items-center justify-between mt-2">
-                            <p className="text-xs text-zinc-500">Email address to receive notifications</p>
-                            <button
-                                onClick={handleSendTestEmail}
-                                disabled={sendingTest || !settings.notificationEmail}
-                                className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
-                            >
-                                <Mail className="w-3 h-3" />
-                                {sendingTest ? 'Sending...' : testEmailSent ? 'Sent!' : 'Send Test Email'}
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Email Notifications Toggle */}
-                    <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-900 rounded-lg">
-                        <div>
-                            <div className="font-medium">Email Alerts</div>
-                            <div className="text-sm text-zinc-500">Receive email notifications for failed transactions</div>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                                type="checkbox"
-                                className="sr-only peer"
-                                checked={settings.emailNotifications}
-                                onChange={(e) => setSettings({ ...settings, emailNotifications: e.target.checked })}
-                            />
-                            <div className="w-11 h-6 bg-zinc-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-zinc-600 peer-checked:bg-green-600"></div>
-                        </label>
-                    </div>
-
-                    {/* Low Float Warning Toggle */}
-                    <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-900 rounded-lg">
-                        <div>
-                            <div className="font-medium">Low Float Warning</div>
-                            <div className="text-sm text-zinc-500">Alert when M-PESA float is running low</div>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                                type="checkbox"
-                                className="sr-only peer"
-                                checked={settings.lowFloatWarning}
-                                onChange={(e) => setSettings({ ...settings, lowFloatWarning: e.target.checked })}
-                            />
-                            <div className="w-11 h-6 bg-zinc-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-zinc-600 peer-checked:bg-green-600"></div>
-                        </label>
-                    </div>
-
-                    {/* Low Float Threshold */}
-                    {settings.lowFloatWarning && (
-                        <div>
-                            <label className="block text-sm font-medium mb-2 flex items-center gap-2">
-                                <AlertTriangle className="w-4 h-4" />
-                                Low Float Threshold (KES)
-                            </label>
-                            <input
-                                type="number"
-                                step="1000"
-                                value={settings.lowFloatThreshold}
-                                onChange={(e) => setSettings({ ...settings, lowFloatThreshold: Number(e.target.value) })}
-                                className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                            />
-                            <p className="text-xs text-zinc-500 mt-1">Alert when float balance drops below this amount</p>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* M-PESA Configuration */}
-            <div className="bg-white dark:bg-black rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <div className="p-6 border-b border-zinc-200 dark:border-zinc-800">
-                    <div className="flex items-center gap-3">
-                        <Shield className="w-5 h-5 text-green-600" />
-                        <h3 className="font-bold text-lg">M-PESA Integration</h3>
-                    </div>
-                </div>
-                <div className="p-6 space-y-4">
-                    <div className="grid md:grid-cols-2 gap-4">
-                        <div className="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-lg">
-                            <div className="text-sm text-zinc-500 mb-1">Environment</div>
-                            <div className="font-semibold capitalize">
-                                {process.env.NEXT_PUBLIC_MPESA_ENVIRONMENT || "sandbox"}
-                            </div>
-                        </div>
-                        <div className="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-lg">
-                            <div className="text-sm text-zinc-500 mb-1">Paybill Number</div>
-                            <div className="font-semibold font-mono">
-                                {process.env.NEXT_PUBLIC_PAYBILL || "123456"}
+                            <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-3xl border border-green-100 dark:border-green-900/30">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="font-bold text-green-900 dark:text-green-100 text-lg">Projected Profit Margin</div>
+                                        <div className="text-sm text-green-700 dark:text-green-300">Your net earnings per 1 Bonga Point</div>
+                                    </div>
+                                    <div className="text-4xl font-black text-green-600">
+                                        KES {currentMargin}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <p className="text-sm text-blue-800 dark:text-blue-200">
-                            🔐 M-PESA credentials are securely stored in environment variables. Visit the{' '}
-                            <a
-                                href="https://developer.safaricom.co.ke"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="underline hover:text-blue-600 inline-flex items-center gap-1"
-                            >
-                                Daraja Portal
-                                <ExternalLink className="w-3 h-3" />
-                            </a>
-                            {' '}to manage your API keys.
-                        </p>
+                    <div className="bg-white dark:bg-black rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
+                        <div className="p-6 border-b border-zinc-200 dark:border-zinc-800">
+                            <div className="flex items-center gap-3">
+                                <Bell className="w-5 h-5 text-green-600" />
+                                <h3 className="font-bold text-lg">Notification System</h3>
+                            </div>
+                        </div>
+                        <div className="p-8 space-y-8">
+                            <div className="space-y-3">
+                                <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Admin Notification Email</label>
+                                <div className="relative group">
+                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-green-600 transition-colors">
+                                        <Mail className="w-5 h-5" />
+                                    </div>
+                                    <input
+                                        type="email"
+                                        value={settings.notificationEmail}
+                                        onChange={(e) => setSettings({ ...settings, notificationEmail: e.target.value })}
+                                        placeholder="admin@example.com"
+                                        className="w-full pl-12 pr-4 py-3 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl focus:ring-2 focus:ring-green-600 outline-none transition-all"
+                                    />
+                                    <button
+                                        onClick={handleSendTestEmail}
+                                        disabled={sendingTest || !settings.notificationEmail}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-zinc-900 dark:bg-zinc-700 text-white text-xs font-bold rounded-xl hover:bg-black transition-all disabled:opacity-50"
+                                    >
+                                        {sendingTest ? 'Sending...' : testEmailSent ? 'Success!' : 'Test'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div className="flex items-center justify-between p-5 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl border border-zinc-100 dark:border-zinc-800">
+                                    <div>
+                                        <div className="font-bold text-sm">Failed Payouts</div>
+                                        <div className="text-xs text-zinc-500">Email on every failure</div>
+                                    </div>
+                                    <label className="relative inline-flex items-center cursor-pointer scale-90">
+                                        <input
+                                            type="checkbox"
+                                            className="sr-only peer"
+                                            checked={settings.emailNotifications}
+                                            onChange={(e) => setSettings({ ...settings, emailNotifications: e.target.checked })}
+                                        />
+                                        <div className="w-11 h-6 bg-zinc-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-zinc-600 peer-checked:bg-green-600"></div>
+                                    </label>
+                                </div>
+
+                                <div className="flex items-center justify-between p-5 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl border border-zinc-100 dark:border-zinc-800">
+                                    <div>
+                                        <div className="font-bold text-sm">Low Float Alert</div>
+                                        <div className="text-xs text-zinc-500">Monitor balance</div>
+                                    </div>
+                                    <label className="relative inline-flex items-center cursor-pointer scale-90">
+                                        <input
+                                            type="checkbox"
+                                            className="sr-only peer"
+                                            checked={settings.lowFloatWarning}
+                                            onChange={(e) => setSettings({ ...settings, lowFloatWarning: e.target.checked })}
+                                        />
+                                        <div className="w-11 h-6 bg-zinc-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-zinc-600 peer-checked:bg-green-600"></div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {settings.lowFloatWarning && (
+                                <div className="space-y-3 animate-in fade-in slide-in-from-top-4 duration-300">
+                                    <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Low Float Threshold (KES)</label>
+                                    <div className="relative group">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-amber-600 transition-colors">
+                                            <AlertTriangle className="w-5 h-5" />
+                                        </div>
+                                        <input
+                                            type="number"
+                                            value={settings.lowFloatThreshold}
+                                            onChange={(e) => setSettings({ ...settings, lowFloatThreshold: Number(e.target.value) })}
+                                            className="w-full pl-12 pr-4 py-3 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl focus:ring-2 focus:ring-amber-600 outline-none transition-all"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Quick Links */}
-            <div className="bg-white dark:bg-black rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <div className="p-6 border-b border-zinc-200 dark:border-zinc-800">
-                    <h3 className="font-bold text-lg">Quick Links</h3>
-                </div>
-                <div className="p-6">
-                    <div className="grid md:grid-cols-2 gap-3">
-                        <a
-                            href="https://console.neon.tech"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-between p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors group"
-                        >
-                            <div>
-                                <div className="font-medium">Neon Console</div>
-                                <div className="text-sm text-zinc-500">Manage your database</div>
+                <div className="space-y-8">
+                    <div className="bg-zinc-900 rounded-3xl p-8 text-white shadow-xl shadow-zinc-200 dark:shadow-none">
+                        <TrendingUp className="w-10 h-10 text-green-400 mb-6" />
+                        <h4 className="text-xl font-bold mb-4">Business Intelligence</h4>
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-center text-zinc-400 text-sm">
+                                <span>Current User Rate</span>
+                                <span className="text-white font-mono font-bold">KES {settings.userRate}</span>
                             </div>
-                            <ExternalLink className="w-4 h-4 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300" />
-                        </a>
+                            <div className="flex justify-between items-center text-zinc-400 text-sm">
+                                <span>Profit per Point</span>
+                                <span className="text-green-400 font-mono font-bold">KES {currentMargin}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-zinc-400 text-sm">
+                                <span>Points for KES 10,000 Profit</span>
+                                <span className="text-white font-mono font-bold">{(10000 / parseFloat(currentMargin)).toFixed(0)} Points</span>
+                            </div>
+                            <div className="pt-6 border-t border-zinc-800">
+                                <p className="text-xs text-zinc-500 leading-relaxed italic">
+                                    Decreasing the user payout rate increases your profit margin but may reduce transaction volume.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="p-6 bg-blue-50 dark:bg-blue-900/10 rounded-3xl border border-blue-100 dark:border-blue-900/30">
+                        <Shield className="w-6 h-6 text-blue-600 mb-4" />
+                        <h4 className="font-bold text-blue-900 dark:text-blue-100 mb-2">M-PESA Health</h4>
+                        <p className="text-sm text-blue-700 dark:text-blue-300 mb-4">Environment: <strong>{process.env.NEXT_PUBLIC_MPESA_ENVIRONMENT || 'sandbox'}</strong></p>
                         <a
                             href="https://developer.safaricom.co.ke"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center justify-between p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors group"
+                            className="inline-flex items-center gap-2 text-xs font-bold text-blue-600 hover:underline"
                         >
-                            <div>
-                                <div className="font-medium">Daraja Portal</div>
-                                <div className="text-sm text-zinc-500">M-PESA API dashboard</div>
-                            </div>
-                            <ExternalLink className="w-4 h-4 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300" />
+                            Open Daraja Portal <ExternalLink className="w-3 h-3" />
                         </a>
                     </div>
                 </div>
             </div>
 
-            {/* Save Button */}
-            <div className="flex justify-end">
+            <div className="flex justify-end pt-4">
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-10 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-2xl shadow-xl shadow-green-600/30 transition-all flex items-center gap-3 disabled:opacity-50 active:scale-95"
                 >
-                    <Save className="w-4 h-4" />
-                    {saving ? 'Saving...' : saved ? 'Settings Saved!' : 'Save Changes'}
+                    <Save className="w-5 h-5" />
+                    {saving ? 'Applying Changes...' : saved ? 'Settings Updated!' : 'Save System Configuration'}
                 </button>
             </div>
 
-            {/* Success Toast */}
             {saved && (
-                <div className="fixed bottom-4 right-4 p-4 bg-green-600 text-white rounded-lg shadow-lg animate-in slide-in-from-bottom">
-                    ✅ Settings saved successfully!
+                <div className="fixed bottom-8 right-8 p-6 bg-black text-white rounded-3xl shadow-2xl animate-in slide-in-from-bottom-10 flex items-center gap-3 font-bold border border-zinc-800">
+                    <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                        <Save className="w-4 h-4 text-white" />
+                    </div>
+                    System configuration updated successfully
                 </div>
             )}
         </div>
