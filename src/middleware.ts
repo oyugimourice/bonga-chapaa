@@ -7,34 +7,43 @@ import type { NextRequest } from 'next/server';
  * Credentials are set in .env: ADMIN_USER and ADMIN_PASSWORD
  */
 export function middleware(request: NextRequest) {
-    if (request.nextUrl.pathname.startsWith('/admin')) {
-        const authHeader = request.headers.get('authorization');
+    const { pathname } = request.nextUrl;
 
-        if (authHeader) {
-            try {
-                // Extract credentials from "Basic <base64>" header
-                const authValue = authHeader.split(' ')[1];
-                const [user, pwd] = atob(authValue).split(':');
-
-                const validUser = process.env.ADMIN_USER || 'admin';
-                const validPass = process.env.ADMIN_PASSWORD || 'admin';
-
-                if (user === validUser && pwd === validPass) {
-                    return NextResponse.next();
-                }
-            } catch (error) {
-                // Invalid base64 or malformed header
-                console.error('Auth header parsing error:', error);
-            }
+    // Only run on /admin routes
+    if (pathname.startsWith('/admin')) {
+        // Allow the login page itself
+        if (pathname === '/admin/login') {
+            return NextResponse.next();
         }
 
-        // Authentication failed or missing - prompt for credentials
-        return new NextResponse('Authentication Required', {
-            status: 401,
-            headers: {
-                'WWW-Authenticate': 'Basic realm="BongaChapaa Admin Area"',
-            },
-        });
+        const session = request.cookies.get('admin_session');
+
+        if (!session) {
+            // No session, redirect to login
+            const url = new URL('/admin/login', request.url);
+            return NextResponse.redirect(url);
+        }
+
+        try {
+            // Basic validation of the session token
+            const sessionData = JSON.parse(atob(session.value));
+
+            if (sessionData.expires < Date.now()) {
+                // Expired
+                const url = new URL('/admin/login', request.url);
+                const response = NextResponse.redirect(url);
+                response.cookies.delete('admin_session');
+                return response;
+            }
+
+            return NextResponse.next();
+        } catch (error) {
+            // Invalid session
+            const url = new URL('/admin/login', request.url);
+            const response = NextResponse.redirect(url);
+            response.cookies.delete('admin_session');
+            return response;
+        }
     }
 
     return NextResponse.next();

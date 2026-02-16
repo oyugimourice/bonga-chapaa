@@ -3,7 +3,8 @@
 
 import { LayoutDashboard, Users, Settings, LogOut } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function AdminLayout({
     children,
@@ -11,6 +12,30 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+    const router = useRouter();
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+    // Don't show the admin layout (sidebar) on the login page
+    if (pathname === '/admin/login') {
+        return <>{children}</>;
+    }
+
+    const handleLogout = async () => {
+        setIsLoggingOut(true);
+        try {
+            const response = await fetch('/api/admin/logout', {
+                method: 'POST',
+            });
+
+            if (response.ok) {
+                router.push('/admin/login');
+            }
+        } catch (error) {
+            console.error('Logout failed:', error);
+        } finally {
+            setIsLoggingOut(false);
+        }
+    };
 
     const navItems = [
         { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -45,9 +70,13 @@ export default function AdminLayout({
                     })}
                 </nav>
                 <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 pb-8">
-                    <button className="flex items-center gap-3 px-4 py-3 w-full text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-colors">
+                    <button
+                        onClick={handleLogout}
+                        disabled={isLoggingOut}
+                        className="flex items-center gap-3 px-4 py-3 w-full text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-colors disabled:opacity-50"
+                    >
                         <LogOut className="w-5 h-5" />
-                        Logout
+                        {isLoggingOut ? 'Logging out...' : 'Logout'}
                     </button>
                 </div>
             </aside>
