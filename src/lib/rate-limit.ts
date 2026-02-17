@@ -46,7 +46,7 @@ export function getClientIP(request: Request): string {
  */
 export function isRateLimited(ip: string): { limited: boolean; lockedUntil?: number } {
     const record = attemptMap.get(ip);
-    
+
     if (!record) {
         return { limited: false };
     }
@@ -120,8 +120,43 @@ export function getAttemptInfo(ip: string) {
 }
 
 /**
+ * General request rate limiting (tracks EVERY attempt)
+ */
+const requestMap = new Map<string, AttemptRecord>();
+
+export function checkRequestLimit(ip: string, maxRequests: number = 30, windowMinutes: number = 1): { limited: boolean; retryAfter?: number } {
+    const now = Date.now();
+    const windowMs = windowMinutes * 60 * 1000;
+    const record = requestMap.get(ip);
+
+    if (!record) {
+        requestMap.set(ip, { count: 1, lastAttempt: now });
+        return { limited: false };
+    }
+
+    // Reset if window expired
+    if (now - record.lastAttempt > windowMs) {
+        requestMap.set(ip, { count: 1, lastAttempt: now });
+        return { limited: false };
+    }
+
+    // Check limit
+    if (record.count >= maxRequests) {
+        const retryAfter = Math.ceil((record.lastAttempt + windowMs - now) / 1000);
+        return { limited: true, retryAfter };
+    }
+
+    // Increment
+    record.count += 1;
+    record.lastAttempt = now;
+    requestMap.set(ip, record);
+    return { limited: false };
+}
+
+/**
  * Clear all rate limit records (use cautiously)
  */
 export function clearAllAttempts(): void {
     attemptMap.clear();
+    requestMap.clear();
 }

@@ -16,11 +16,17 @@ export async function initiateB2CPayout(transactionId: string) {
     // Correct endpoint for B2C
     const b2cUrl = `${baseUrl}/mpesa/b2c/v1/paymentrequest`;
 
+    // Determine payout amount (round to whole number unless decimals are explicitly enabled)
+    const allowDecimals = process.env.ALLOW_DECIMAL_PAYOUT === 'true';
+    const amount = allowDecimals
+      ? Number(trx.payoutAmount).toFixed(2)
+      : Math.floor(Number(trx.payoutAmount)).toString();
+
     const response = await axios.post(b2cUrl, {
       InitiatorName: process.env.B2C_INITIATOR_NAME,
       SecurityCredential: process.env.B2C_SECURITY_CREDENTIAL,
       CommandID: "BusinessPayment",
-      Amount: Math.floor(Number(trx.payoutAmount)), // M-PESA doesn't like cents in B2C usually
+      Amount: amount,
       PartyA: process.env.B2C_SHORTCODE,
       PartyB: trx.phoneNumber,
       Remarks: "BongaChapaa Payout",
