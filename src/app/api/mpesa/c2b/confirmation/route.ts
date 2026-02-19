@@ -1,9 +1,15 @@
-
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { initiateB2CPayout } from '@/lib/mpesa-tasks';
+import { validateMpesaIp } from '@/lib/mpesa-security';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+    // 0. Security: Validate source IP
+    if (!validateMpesaIp(request)) {
+        console.warn("Unauthorized IP attempted to access C2B Confirmation");
+        return NextResponse.json({ ResultCode: 1, ResultDesc: "Unauthorized" }, { status: 401 });
+    }
+
     try {
         const body = await request.json();
 
@@ -59,12 +65,13 @@ export async function POST(request: Request) {
         });
 
         // 3. Trigger Payout 
-        // We fire this and continue. In a production Vercel app, 
-        // adding it to a queue or using a background job is safer,
-        // but for now we initiate it immediately.
-        initiateB2CPayout(transaction.id).catch(e => {
+        // We await this to ensure the request is finished before the serverless 
+        // function returns, ensuring higher reliability.
+        try {
+            await initiateB2CPayout(transaction.id);
+        } catch (e) {
             console.error("Async payout initiation failed:", e);
-        });
+        }
 
         return NextResponse.json({ ResultCode: 0, ResultDesc: "Accepted" });
     } catch (error) {

@@ -1,7 +1,13 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { validateMpesaIp } from '@/lib/mpesa-security';
 
-import { NextResponse } from 'next/server';
+export async function POST(request: NextRequest) {
+    // 0. Security: Validate source IP
+    if (!validateMpesaIp(request)) {
+        console.warn("Unauthorized IP attempted to access C2B Validation");
+        return NextResponse.json({ ResultCode: 1, ResultDesc: "Unauthorized" }, { status: 401 });
+    }
 
-export async function POST(request: Request) {
     try {
         const body = await request.json();
         console.log("C2B Validation:", body);

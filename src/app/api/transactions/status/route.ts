@@ -1,8 +1,26 @@
-
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getClientIP, checkRequestLimit, isRateLimited, recordFailedAttempt } from '@/lib/rate-limit';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+    const ip = getClientIP(request);
+
+    // 1. General Rate Limit (Prevents DDoS/Bulk scraping)
+    const generalLimit = checkRequestLimit(ip, 10, 1); // 10 requests per minute
+    if (generalLimit.limited) {
+        return NextResponse.json({
+            error: `Too many requests. Retry after ${generalLimit.retryAfter}s`
+        }, { status: 429 });
+    }
+
+    // 2. Failure Rate Limit (Prevents guessing receipt numbers)
+    const failureLimit = isRateLimited(ip);
+    if (failureLimit.limited) {
+        return NextResponse.json({
+            error: 'Account locked due to too many failed receipt lookups. Try again in 30 minutes.'
+        }, { status: 429 });
+    }
+
     const { searchParams } = new URL(request.url);
     const receipt = searchParams.get('receipt');
 
@@ -16,6 +34,7 @@ export async function GET(request: Request) {
         });
 
         if (!transaction) {
+            recordFailedAttempt(ip);
             return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
         }
 

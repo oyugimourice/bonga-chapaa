@@ -1,8 +1,14 @@
-
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { validateMpesaIp } from '@/lib/mpesa-security';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+    // 0. Security: Validate source IP
+    if (!validateMpesaIp(request)) {
+        console.warn("Unauthorized IP attempted to access B2C Timeout");
+        return NextResponse.json({ ResultCode: 1, ResultDesc: "Unauthorized" }, { status: 401 });
+    }
+
     try {
         const body = await request.json();
         // Safaricom B2C Timeout Payload roughly looks like:

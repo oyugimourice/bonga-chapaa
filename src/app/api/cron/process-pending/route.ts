@@ -1,13 +1,18 @@
-
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { initiateB2CPayout } from '@/lib/mpesa-tasks';
+import { validateCronSecret } from '@/lib/mpesa-security';
 
 // This endpoint should be protected or called by a secure Cron job
 // Vercel Cron: https://vercel.com/docs/cron-jobs
 // Or manually via Admin dashboard
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+    // 0. Security: Validate Cron Secret
+    if (!validateCronSecret(request)) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     try {
         // 1. Find stuck transactions
         // Defined as PENDING for more than 5 minutes
