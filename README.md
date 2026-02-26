@@ -91,8 +91,8 @@ MPESA_CONSUMER_SECRET="your_secret"
 B2C_SHORTCODE="your_paybill"
 B2C_INITIATOR_NAME="your_api_username"
 B2C_SECURITY_CREDENTIAL="your_encrypted_password"
-B2C_TIMEOUT_URL="https://yourdomain.com/api/mpesa/b2c/timeout"
-B2C_RESULT_URL="https://yourdomain.com/api/mpesa/b2c/result"
+B2C_TIMEOUT_URL="https://yourdomain.com/api/callbacks/b2c/timeout"
+B2C_RESULT_URL="https://yourdomain.com/api/callbacks/b2c/result"
 
 # Business Logic
 USER_PAYOUT_RATE="0.20" # Cash per point (Your payout to user)
@@ -141,7 +141,7 @@ MIT — built with ❤️ for the Kenyan fintech ecosystem.
 
 Suggested endpoints to mirror Safaricom Daraja flows:
 
-- POST `/api/mpesa/c2b/validate` — validate Bonga receipt before accepting. Example request body:
+- POST `/api/callbacks/c2b/validation` — validate Bonga receipt before accepting. Example request body:
 
 ```json
 {
@@ -154,13 +154,13 @@ Suggested endpoints to mirror Safaricom Daraja flows:
 }
 ```
 
-- POST `/api/mpesa/c2b/confirm` — acknowledge and log confirmed C2B payments. Example response you send:
+- POST `/api/callbacks/c2b/confirmation` — acknowledge and log confirmed C2B payments. Example response you send:
 
 ```json
 {"ResultCode": 0, "ResultDesc": "Accepted"}
 ```
 
-- POST `/api/mpesa/b2c/result` — handle payout results from M-PESA B2C. Sample callback payload:
+- POST `/api/callbacks/b2c/result` — handle payout results from M-PESA B2C. Sample callback payload:
 
 ```json
 {
@@ -183,6 +183,6 @@ Suggested endpoints to mirror Safaricom Daraja flows:
 }
 ```
 
-- POST `/api/mpesa/b2c/timeout` — log and retry/alert on payout timeouts. Typical response from you: `{ "ResultCode": 0, "ResultDesc": "Received" }`.
+- POST `/api/callbacks/b2c/timeout` — log and retry/alert on payout timeouts. Typical response from you: `{ "ResultCode": 0, "ResultDesc": "Received" }`.
 
 Keep request/response bodies strict to Daraja spec; sign any required headers; persist full payloads for audit and reconciliation.

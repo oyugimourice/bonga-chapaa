@@ -40,8 +40,8 @@ async function registerUrls() {
         const response = await axios.post(url, {
             ShortCode: SHORTCODE,
             ResponseType: "Completed", // or "Cancelled"
-            ConfirmationURL: `${APP_URL}/api/mpesa/c2b/confirmation`,
-            ValidationURL: `${APP_URL}/api/mpesa/c2b/validation`
+            ConfirmationURL: `${APP_URL}/api/callbacks/c2b/confirmation`,
+            ValidationURL: `${APP_URL}/api/callbacks/c2b/validation`
         }, {
             headers: { Authorization: `Bearer ${token}` }
         });

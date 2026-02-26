@@ -51,8 +51,8 @@ C2B_SHORTCODE="your_paybill"
 B2C_SHORTCODE="your_b2c_shortcode"
 B2C_INITIATOR_NAME="your_initiator"
 B2C_SECURITY_CREDENTIAL="your_encrypted_password"
-B2C_TIMEOUT_URL="https://your-domain.com/api/mpesa/b2c/timeout"
-B2C_RESULT_URL="https://your-domain.com/api/mpesa/b2c/result"
+B2C_TIMEOUT_URL="https://your-domain.com/api/callbacks/b2c/timeout"
+B2C_RESULT_URL="https://your-domain.com/api/callbacks/b2c/result"
 ```
 
 ## 6. Going Live (Production)
