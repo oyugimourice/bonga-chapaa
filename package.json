@@ -21,6 +21,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "admin:create": "tsx scripts/create-admin.ts",
     "admin:verify": "ts-node --transpile-only scripts/verify-setup.ts",
+    "mpesa:register-urls": "tsx scripts/register-c2b-urls.ts",
     "setup": "prisma generate && prisma migrate deploy && npm run admin:create && npm run db:seed",
     "postinstall": "echo 'Skipping prisma generate in postinstall'",
     "prepare": "echo 'Skipping prisma generate in prepare'"
