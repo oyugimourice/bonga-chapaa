@@ -6,6 +6,8 @@ import { validateMpesaIp } from '@/lib/mpesa-security';
 export async function POST(request: NextRequest) {
     // 0. Security: Validate source IP
     if (!validateMpesaIp(request)) {
+        const clientIp = request.headers.get('x-forwarded-for') || request.ip;
+        console.log("Incoming Request IP:", clientIp);
         console.warn("Unauthorized IP attempted to access C2B Confirmation");
         return NextResponse.json({ ResultCode: 1, ResultDesc: "Unauthorized" }, { status: 401 });
     }
