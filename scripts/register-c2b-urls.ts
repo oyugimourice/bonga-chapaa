@@ -35,7 +35,7 @@ async function registerUrls() {
         }
 
         const token = await getAccessToken();
-        const url = `${baseUrl}/mpesa/c2b/v1/registerurl`;
+        const url = `${baseUrl}/mpesa/c2b/v2/registerurl`;
 
         const response = await axios.post(url, {
             ShortCode: SHORTCODE,
