@@ -2,7 +2,7 @@
 import Header from '@/components/Header';
 import Calculator from '@/components/Calculator';
 import TransactionStatus from '@/components/TransactionStatus';
-import { ArrowDown, CheckCircle2, Zap, ShieldCheck, Banknote } from 'lucide-react';
+import { Zap, ShieldCheck, Banknote } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 
 export default async function Home() {
@@ -15,7 +15,7 @@ export default async function Home() {
 
             <main className="min-h-screen">
                 {/* Hero Section */}
-                <section className="w-full py-20 md:py-32 px-4 bg-gradient-to-b from-green-50 to-transparent dark:from-green-950/20 dark:to-transparent">
+                <section className="w-full py-20 md:py-32 px-4 bg-linear-to-b from-green-50 to-transparent dark:from-green-950/20 dark:to-transparent">
                     <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
                         <div className="space-y-6 text-center md:text-left">
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-sm font-medium">
@@ -96,7 +96,7 @@ export default async function Home() {
                                 <div className="w-16 h-16 rounded-full bg-zinc-900 text-white flex items-center justify-center text-2xl font-bold mb-6 shadow-xl shadow-zinc-900/10 z-10">
                                     {i + 1}
                                 </div>
-                                {i !== 2 && <div className="hidden md:block absolute top-8 left-1/2 w-full h-0.5 bg-zinc-200 dark:bg-zinc-800 -z-0"></div>}
+                                {i !== 2 && <div className="hidden md:block absolute top-8 left-1/2 w-full h-0.5 bg-zinc-200 dark:bg-zinc-800 z-0"></div>}
                                 <h3 className="text-xl font-bold mb-2">{step.title}</h3>
                                 <p className="text-zinc-500 text-center">{step.desc}</p>
                             </div>
